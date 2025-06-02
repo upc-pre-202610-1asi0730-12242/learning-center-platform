@@ -24,7 +24,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
    ///     It also adds the created and updated date interceptor to the database context.
    /// </remarks>
    /// <param name="builder">
-   ///     The options builder for the database context
+   ///     The option builder for the database context
    /// </param>
    protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
