@@ -1,0 +1,364 @@
+@startuml Class Diagram - Publishing, IAM, Shared Bounded Contexts
+
+package "Publishing Bounded Context" {
+    package "Domain" {
+        class Tutorial {
+            +Tutorial(string title, string summary, int categoryId)
+            +Id: int
+            +Title: string
+            +Summary: string
+            +CategoryId: int
+            +Category: Category
+            +Assets: List<Asset>
+            +CreatedDate: DateTimeOffset?
+            +UpdatedDate: DateTimeOffset?
+        }
+
+        class Category {
+            +Category(string name)
+            +Id: int
+            +Name: string
+        }
+
+        class Asset {
+            +Asset(EAssetType type)
+            +Id: int
+            +AssetIdentifier: AcmeAssetIdentifier
+            +Status: EPublishingStatus
+            +Type: EAssetType
+            +Readable: bool
+            +Viewable: bool
+            +SendToEdit(): void
+            +SendToApproval(): void
+            +ApproveAndLock(): void
+            +Reject(): void
+            +ReturnToEdit(): void
+            +GetContent(): object
+        }
+
+        class VideoAsset extends Asset {
+            +VideoAsset(string videoUrl)
+            +VideoUri: Uri?
+            +Readable: bool = false
+            +Viewable: bool = true
+        }
+
+        class ImageAsset extends Asset {
+            +ImageAsset()
+            +ImageUri: Uri?
+            +Readable: bool = false
+            +Viewable: bool = true
+        }
+
+        class ReadableContentAsset extends Asset {
+            +ReadableContentAsset()
+            +Readable: bool = true
+            +Viewable: bool = false
+        }
+
+        interface ITutorialQueryService {
+            +Handle(GetTutorialByIdQuery query): Task<Tutorial?>
+            +Handle(GetAllTutorialsQuery query): Task<IEnumerable<Tutorial>>
+            +Handle(GetAllTutorialsByCategoryIdQuery query): Task<IEnumerable<Tutorial>>
+        }
+
+        interface ITutorialCommandService {
+            +Handle(AddVideoAssetToTutorialCommand command): Task<Tutorial?>
+            +Handle(CreateTutorialCommand command): Task<Tutorial?>
+        }
+
+        interface ICategoryQueryService {
+            +Handle(GetCategoryByIdQuery query): Task<Category?>
+            +Handle(GetAllCategoriesQuery query): Task<IEnumerable<Category>>
+        }
+
+        interface ICategoryCommandService {
+            +Handle(CreateCategoryCommand command): Task<Category?>
+        }
+
+        interface ITutorialRepository extends IBaseRepository<Tutorial> {
+            +FindByCategoryIdAsync(int categoryId): Task<IEnumerable<Tutorial>>
+            +ExistsByTitleAsync(string title): Task<bool>
+        }
+
+        interface ICategoryRepository extends IBaseRepository<Category> {
+        }
+    }
+
+    package "Application" {
+        class TutorialCommandService implements ITutorialCommandService {
+            +TutorialCommandService(ITutorialRepository tutorialRepository)
+            +Handle(AddVideoAssetToTutorialCommand command): Task<Tutorial?>
+            +Handle(CreateTutorialCommand command): Task<Tutorial?>
+        }
+
+        class TutorialQueryService implements ITutorialQueryService {
+            +TutorialQueryService(ITutorialRepository tutorialRepository)
+            +Handle(GetTutorialByIdQuery query): Task<Tutorial?>
+            +Handle(GetAllTutorialsQuery query): Task<IEnumerable<Tutorial>>
+            +Handle(GetAllTutorialsByCategoryIdQuery query): Task<IEnumerable<Tutorial>>
+        }
+
+        class CategoryCommandService implements ICategoryCommandService {
+            +CategoryCommandService(ICategoryRepository categoryRepository)
+            +Handle(CreateCategoryCommand command): Task<Category?>
+        }
+
+        class CategoryQueryService implements ICategoryQueryService {
+            +CategoryQueryService(ICategoryRepository categoryRepository)
+            +Handle(GetCategoryByIdQuery query): Task<Category?>
+            +Handle(GetAllCategoriesQuery query): Task<IEnumerable<Category>>
+        }
+    }
+
+    package "Infrastructure" {
+        class TutorialRepository implements ITutorialRepository {
+            +TutorialRepository(AppDbContext context)
+            +AddAsync(Tutorial entity): Task
+            +FindByIdAsync(int id): Task<Tutorial?>
+            +Update(Tutorial entity): void
+            +Remove(Tutorial entity): void
+            +ListAsync(): Task<IEnumerable<Tutorial>>
+            +FindByCategoryIdAsync(int categoryId): Task<IEnumerable<Tutorial>>
+            +ExistsByTitleAsync(string title): Task<bool>
+        }
+
+        class CategoryRepository implements ICategoryRepository {
+            +CategoryRepository(AppDbContext context)
+            +AddAsync(Category entity): Task
+            +FindByIdAsync(int id): Task<Category?>
+            +Update(Category entity): void
+            +Remove(Category entity): void
+            +ListAsync(): Task<IEnumerable<Category>>
+        }
+    }
+
+    package "Interfaces" {
+        class TutorialsController {
+            +TutorialsController(ITutorialCommandService tutorialCommandService, ITutorialQueryService tutorialQueryService)
+            +GetTutorialById(int tutorialId): Task<IActionResult>
+            +CreateTutorial(CreateTutorialResource resource): Task<IActionResult>
+            +GetAllTutorials(): Task<IActionResult>
+            +AddVideoToTutorial(AddVideoAssetToTutorialResource resource, int tutorialId): Task<IActionResult>
+        }
+
+        class CategoriesController {
+            +CategoriesController(ICategoryCommandService categoryCommandService, ICategoryQueryService categoryQueryService)
+            +GetCategoryById(int categoryId): Task<IActionResult>
+            +CreateCategory(CreateCategoryResource resource): Task<IActionResult>
+            +GetAllCategories(): Task<IActionResult>
+        }
+
+        class CategoryTutorialsController {
+            +CategoryTutorialsController(ITutorialQueryService tutorialQueryService)
+            +GetTutorialsByCategoryId(int categoryId): Task<IActionResult>
+        }
+
+        class CreateTutorialCommandFromResourceAssembler {
+            +ToCommandFromResource(CreateTutorialResource resource): CreateTutorialCommand
+        }
+
+        class TutorialResourceFromEntityAssembler {
+            +ToResourceFromEntity(Tutorial entity): TutorialResource
+        }
+
+        class CreateCategoryCommandFromResourceAssembler {
+            +ToCommandFromResource(CreateCategoryResource resource): CreateCategoryCommand
+        }
+
+        class CategoryResourceFromEntityAssembler {
+            +ToResourceFromEntity(Category entity): CategoryResource
+        }
+
+        class AddVideoAssetToTutorialCommandFromResourceAssembler {
+            +ToCommandFromResource(AddVideoAssetToTutorialResource resource, int tutorialId): AddVideoAssetToTutorialCommand
+        }
+
+        record CreateTutorialResource {
+            Title: string
+            Summary: string
+            CategoryId: int
+        }
+
+        record TutorialResource {
+            Id: int
+            Title: string
+            Summary: string
+            CategoryId: int
+        }
+
+        record CreateCategoryResource {
+            Name: string
+        }
+
+        record CategoryResource {
+            Id: int
+            Name: string
+        }
+
+        record AddVideoAssetToTutorialResource {
+            VideoUrl: string
+        }
+    }
+
+    ' Relationships within Publishing
+    Tutorial --> Category : association (belongs to)
+    Tutorial *-- Asset : composition (has many)
+    Asset <|-- VideoAsset : inheritance
+    Asset <|-- ImageAsset : inheritance
+    Asset <|-- ReadableContentAsset : inheritance
+    TutorialCommandService ..> ITutorialRepository : dependency
+    TutorialQueryService ..> ITutorialRepository : dependency
+    CategoryCommandService ..> ICategoryRepository : dependency
+    CategoryQueryService ..> ICategoryRepository : dependency
+    TutorialsController ..> TutorialCommandService : dependency
+    TutorialsController ..> TutorialQueryService : dependency
+    CategoriesController ..> CategoryCommandService : dependency
+    CategoriesController ..> CategoryQueryService : dependency
+    CategoryTutorialsController ..> TutorialQueryService : dependency
+    TutorialsController ..> CreateTutorialCommandFromResourceAssembler : dependency
+    TutorialsController ..> TutorialResourceFromEntityAssembler : dependency
+    TutorialsController ..> AddVideoAssetToTutorialCommandFromResourceAssembler : dependency
+    CategoriesController ..> CreateCategoryCommandFromResourceAssembler : dependency
+    CategoriesController ..> CategoryResourceFromEntityAssembler : dependency
+    TutorialRepository ..|> ITutorialRepository : implements
+    CategoryRepository ..|> ICategoryRepository : implements
+}
+
+package "IAM Bounded Context" {
+    package "Domain" {
+        class User {
+            +User(string username, string passwordHash)
+            +Id: int
+            +Username: string
+            +PasswordHash: string
+            +UpdateUsername(string username): User
+            +UpdatePasswordHash(string passwordHash): User
+        }
+
+        interface IUserCommandService {
+            +Handle(SignInCommand command): Task<(User user, string token)>
+            +Handle(SignUpCommand command): Task
+        }
+
+        interface IUserQueryService {
+            +Handle(GetUserByIdQuery query): Task<User?>
+            +Handle(GetAllUsersQuery query): Task<IEnumerable<User>>
+            +Handle(GetUserByUsernameQuery query): Task<User?>
+        }
+
+        interface IUserRepository extends IBaseRepository<User> {
+            +FindByUsernameAsync(string username): Task<User?>
+            +ExistsByUsername(string username): bool
+        }
+    }
+
+    package "Application" {
+        class UserCommandService implements IUserCommandService {
+            +UserCommandService(IUserRepository userRepository)
+            +Handle(SignInCommand command): Task<(User user, string token)>
+            +Handle(SignUpCommand command): Task
+        }
+
+        class UserQueryService implements IUserQueryService {
+            +UserQueryService(IUserRepository userRepository)
+            +Handle(GetUserByIdQuery query): Task<User?>
+            +Handle(GetAllUsersQuery query): Task<IEnumerable<User>>
+            +Handle(GetUserByUsernameQuery query): Task<User?>
+        }
+    }
+
+    package "Infrastructure" {
+        class UserRepository implements IUserRepository {
+            +UserRepository(AppDbContext context)
+            +AddAsync(User entity): Task
+            +FindByIdAsync(int id): Task<User?>
+            +Update(User entity): void
+            +Remove(User entity): void
+            +ListAsync(): Task<IEnumerable<User>>
+            +FindByUsernameAsync(string username): Task<User?>
+            +ExistsByUsername(string username): bool
+        }
+    }
+
+    package "Interfaces" {
+        class AuthenticationController {
+            +AuthenticationController(IUserCommandService userCommandService)
+            +SignIn(SignInResource signInResource): Task<IActionResult>
+            +SignUp(SignUpResource signUpResource): Task<IActionResult>
+        }
+
+        class SignInCommandFromResourceAssembler {
+            +ToCommandFromResource(SignInResource resource): SignInCommand
+        }
+
+        class SignUpCommandFromResourceAssembler {
+            +ToCommandFromResource(SignUpResource resource): SignUpCommand
+        }
+
+        class AuthenticatedUserResourceFromEntityAssembler {
+            +ToResourceFromEntity(User user, string token): AuthenticatedUserResource
+        }
+
+        record SignInResource {
+            Username: string
+            Password: string
+        }
+
+        record SignUpResource {
+            Username: string
+            Password: string
+        }
+
+        record AuthenticatedUserResource {
+            Id: int
+            Username: string
+            Token: string
+        }
+    }
+
+    ' Relationships within IAM
+    UserCommandService ..> IUserRepository : dependency
+    UserQueryService ..> IUserRepository : dependency
+    AuthenticationController ..> UserCommandService : dependency
+    AuthenticationController ..> SignInCommandFromResourceAssembler : dependency
+    AuthenticationController ..> SignUpCommandFromResourceAssembler : dependency
+    AuthenticationController ..> AuthenticatedUserResourceFromEntityAssembler : dependency
+    UserRepository ..|> IUserRepository : implements
+}
+
+package "Shared Bounded Context" {
+    package "Domain" {
+        interface IBaseRepository<TEntity> {
+            +AddAsync(TEntity entity): Task
+            +FindByIdAsync(int id): Task<TEntity?>
+            +Update(TEntity entity): void
+            +Remove(TEntity entity): void
+            +ListAsync(): Task<IEnumerable<TEntity>>
+        }
+
+        interface IUnitOfWork {
+            +CompleteAsync(): Task
+        }
+
+        interface IEvent {
+        }
+    }
+
+    package "Infrastructure" {
+        class AppDbContext {
+            +AppDbContext(DbContextOptions<AppDbContext> options)
+            +SaveChangesAsync(): Task<int>
+        }
+    }
+}
+
+' Cross-boundary relationships
+
+ICategoryRepository ..|> IBaseRepository : extends
+IUserRepository ..|> IBaseRepository : extends
+ITutorialRepository ..|> IBaseRepository : extends
+
+
+
+@enduml
