@@ -7,6 +7,7 @@ using Acme.Center.Platform.Shared.Application.Model;
 using Acme.Center.Platform.Shared.Domain.Repositories;
 using System.Threading;
 using System.Threading.Tasks;
+using Acme.Center.Platform.Publishing.Domain.Model.Errors;
 
 namespace Acme.Center.Platform.Publishing.Application.Internal.CommandServices;
 

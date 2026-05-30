@@ -9,6 +9,7 @@ using Acme.Center.Platform.Shared.Domain.Repositories;
 using Cortex.Mediator;
 using System.Threading;
 using System.Threading.Tasks;
+using Acme.Center.Platform.Publishing.Domain.Model.Errors;
 
 namespace Acme.Center.Platform.Publishing.Application.Internal.CommandServices;
 

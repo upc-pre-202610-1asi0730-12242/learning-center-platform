@@ -1,6 +1,6 @@
 using Acme.Center.Platform.Shared.Domain.Model;
 
-namespace Acme.Center.Platform.Publishing.Domain.Model;
+namespace Acme.Center.Platform.Publishing.Domain.Model.Errors;
 
 public static class PublishingErrors
 {

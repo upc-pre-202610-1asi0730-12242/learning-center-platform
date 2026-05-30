@@ -2,6 +2,7 @@ using Acme.Center.Platform.Iam.Application.Internal.OutboundServices;
 using Acme.Center.Platform.Iam.Domain.Model;
 using Acme.Center.Platform.Iam.Domain.Model.Aggregates;
 using Acme.Center.Platform.Iam.Domain.Model.Commands;
+using Acme.Center.Platform.Iam.Domain.Model.Errors;
 using Acme.Center.Platform.Iam.Domain.Repositories;
 using Acme.Center.Platform.Iam.Domain.Services;
 using Acme.Center.Platform.Shared.Application.Model;

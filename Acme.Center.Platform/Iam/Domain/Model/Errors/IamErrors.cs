@@ -1,6 +1,6 @@
 using Acme.Center.Platform.Shared.Domain.Model;
 
-namespace Acme.Center.Platform.Iam.Domain.Model;
+namespace Acme.Center.Platform.Iam.Domain.Model.Errors;
 
 public static class IamErrors
 {

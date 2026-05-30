@@ -1,6 +1,6 @@
 using Acme.Center.Platform.Shared.Domain.Model;
 
-namespace Acme.Center.Platform.Profiles.Domain.Model;
+namespace Acme.Center.Platform.Profiles.Domain.Model.Errors;
 
 public static class ProfileErrors
 {
