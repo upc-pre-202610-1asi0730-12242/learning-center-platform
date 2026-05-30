@@ -27,6 +27,7 @@ using Acme.Center.Platform.Shared.Infrastructure.Interfaces.AspNetCore.Configura
 using Acme.Center.Platform.Shared.Infrastructure.Mediator.Cortex.Configuration;
 using Acme.Center.Platform.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using Acme.Center.Platform.Shared.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Acme.Center.Platform.Shared.Infrastructure.Pipeline.Middleware.Extensions;
 using Cortex.Mediator.Commands;
 using Cortex.Mediator.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -153,6 +154,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+app.UseGlobalExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
