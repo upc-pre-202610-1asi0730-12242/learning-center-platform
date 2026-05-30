@@ -71,8 +71,9 @@ public class TutorialsController(
     public async Task<IActionResult> CreateTutorial([FromBody] CreateTutorialResource resource)
     {
         var createTutorialCommand = CreateTutorialCommandFromResourceAssembler.ToCommandFromResource(resource);
-        var tutorial = await tutorialCommandService.Handle(createTutorialCommand);
-        if (tutorial is null) return BadRequest();
+        var result = await tutorialCommandService.Handle(createTutorialCommand);
+        if (result.IsFailure) return BadRequest(result.Message);
+        var tutorial = result.Value;
         var tutorialResource = TutorialResourceFromEntityAssembler.ToResourceFromEntity(tutorial);
         return CreatedAtAction(nameof(GetTutorialById), new { tutorialId = tutorial.Id }, tutorialResource);
     }
@@ -104,8 +105,9 @@ public class TutorialsController(
     {
         var addVideoAssetToTutorialCommand =
             AddVideoAssetToTutorialCommandFromResourceAssembler.ToCommandFromResource(resource, tutorialId);
-        var tutorial = await tutorialCommandService.Handle(addVideoAssetToTutorialCommand);
-        if (tutorial is null) return BadRequest();
+        var result = await tutorialCommandService.Handle(addVideoAssetToTutorialCommand);
+        if (result.IsFailure) return BadRequest(result.Message);
+        var tutorial = result.Value;
         var tutorialResource = TutorialResourceFromEntityAssembler.ToResourceFromEntity(tutorial);
         return CreatedAtAction(nameof(GetTutorialById), new { tutorialId = tutorial.Id }, tutorialResource);
     }

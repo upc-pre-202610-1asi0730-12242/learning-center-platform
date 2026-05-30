@@ -38,8 +38,9 @@ public class ProfilesController(
     public async Task<IActionResult> CreateProfile(CreateProfileResource resource)
     {
         var createProfileCommand = CreateProfileCommandFromResourceAssembler.ToCommandFromResource(resource);
-        var profile = await profileCommandService.Handle(createProfileCommand);
-        if (profile is null) return BadRequest();
+        var result = await profileCommandService.Handle(createProfileCommand);
+        if (result.IsFailure) return BadRequest(result.Message);
+        var profile = result.Value;
         var profileResource = ProfileResourceFromEntityAssembler.ToResourceFromEntity(profile);
         return CreatedAtAction(nameof(GetProfileById), new { profileId = profile.Id }, profileResource);
     }

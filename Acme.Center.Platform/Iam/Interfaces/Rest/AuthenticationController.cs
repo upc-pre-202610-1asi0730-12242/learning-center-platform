@@ -29,10 +29,13 @@ public class AuthenticationController(IUserCommandService userCommandService) : 
         Description = "Sign in a user",
         OperationId = "SignIn")]
     [SwaggerResponse(StatusCodes.Status200OK, "The user was authenticated", typeof(AuthenticatedUserResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid username or password")]
     public async Task<IActionResult> SignIn([FromBody] SignInResource signInResource)
     {
         var signInCommand = SignInCommandFromResourceAssembler.ToCommandFromResource(signInResource);
-        var authenticatedUser = await userCommandService.Handle(signInCommand);
+        var result = await userCommandService.Handle(signInCommand);
+        if (result.IsFailure) return BadRequest(result.Message);
+        var authenticatedUser = result.Value;
         var resource =
             AuthenticatedUserResourceFromEntityAssembler.ToResourceFromEntity(authenticatedUser.user,
                 authenticatedUser.token);
@@ -53,10 +56,12 @@ public class AuthenticationController(IUserCommandService userCommandService) : 
         Description = "Sign up a new user",
         OperationId = "SignUp")]
     [SwaggerResponse(StatusCodes.Status200OK, "The user was created successfully")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "The user was not created")]
     public async Task<IActionResult> SignUp([FromBody] SignUpResource signUpResource)
     {
         var signUpCommand = SignUpCommandFromResourceAssembler.ToCommandFromResource(signUpResource);
-        await userCommandService.Handle(signUpCommand);
+        var result = await userCommandService.Handle(signUpCommand);
+        if (result.IsFailure) return BadRequest(result.Message);
         return Ok(new { message = "User created successfully" });
     }
 }

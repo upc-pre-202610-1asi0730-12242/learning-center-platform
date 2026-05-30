@@ -1,5 +1,6 @@
 using Acme.Center.Platform.Profiles.Domain.Model.Aggregates;
 using Acme.Center.Platform.Profiles.Domain.Model.Commands;
+using Acme.Center.Platform.Shared.Application.Model;
 
 namespace Acme.Center.Platform.Profiles.Application.CommandServices;
 
@@ -17,5 +18,5 @@ public interface IProfileCommandService
     /// <returns>
     /// The <see cref="Profile"/> object with the created profile
     /// </returns>
-    Task<Profile?> Handle(CreateProfileCommand command);
+    Task<Result<Profile>> Handle(CreateProfileCommand command);
 }

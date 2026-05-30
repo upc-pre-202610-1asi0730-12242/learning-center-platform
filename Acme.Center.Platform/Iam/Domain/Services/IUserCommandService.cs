@@ -1,5 +1,6 @@
 using Acme.Center.Platform.Iam.Domain.Model.Aggregates;
 using Acme.Center.Platform.Iam.Domain.Model.Commands;
+using Acme.Center.Platform.Shared.Application.Model;
 
 namespace Acme.Center.Platform.Iam.Domain.Services;
 
@@ -20,7 +21,7 @@ public interface IUserCommandService
         * <param name="command">The sign in command</param>
         * <returns>The authenticated user and the JWT token</returns>
         */
-    Task<(User user, string token)> Handle(SignInCommand command);
+    Task<Result<(User user, string token)>> Handle(SignInCommand command);
 
     /**
         * <summary>
@@ -29,5 +30,5 @@ public interface IUserCommandService
         * <param name="command">The sign up command</param>
         * <returns>A confirmation message on successful creation.</returns>
         */
-    Task Handle(SignUpCommand command);
+    Task<Result> Handle(SignUpCommand command);
 }

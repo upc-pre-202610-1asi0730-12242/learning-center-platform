@@ -27,8 +27,8 @@ public class ProfilesContextFacade(
         string postalCode, string country)
     {
         var createProfileCommand = new CreateProfileCommand(firstName, lastName, email, street, number, city, postalCode, country);
-        var profile = await profileCommandService.Handle(createProfileCommand);
-        return profile?.Id ?? 0;
+        var result = await profileCommandService.Handle(createProfileCommand);
+        return result.Value?.Id ?? 0;
     }
 
     // inheritedDoc

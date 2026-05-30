@@ -1,5 +1,6 @@
 using Acme.Center.Platform.Publishing.Domain.Model.Commands;
 using Acme.Center.Platform.Publishing.Domain.Model.Entities;
+using Acme.Center.Platform.Shared.Application.Model;
 
 namespace Acme.Center.Platform.Publishing.Application.CommandServices;
 
@@ -17,5 +18,5 @@ public interface ICategoryCommandService
     /// <returns>
     ///     The created <see cref="Category" /> entity.
     /// </returns>
-    public Task<Category?> Handle(CreateCategoryCommand command);
+    public Task<Result<Category>> Handle(CreateCategoryCommand command);
 }

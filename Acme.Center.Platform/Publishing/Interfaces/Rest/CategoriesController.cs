@@ -70,8 +70,9 @@ public class CategoriesController(
     public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryResource resource)
     {
         var createCategoryCommand = CreateCategoryCommandFromResourceAssembler.ToCommandFromResource(resource);
-        var category = await categoryCommandService.Handle(createCategoryCommand);
-        if (category is null) return BadRequest();
+        var result = await categoryCommandService.Handle(createCategoryCommand);
+        if (result.IsFailure) return BadRequest(result.Message);
+        var category = result.Value;
         var categoryResource = CategoryResourceFromEntityAssembler.ToResourceFromEntity(category);
         return CreatedAtAction(nameof(GetCategoryById), new { categoryId = category.Id }, categoryResource);
     }

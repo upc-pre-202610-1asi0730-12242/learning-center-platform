@@ -3,6 +3,7 @@ using Acme.Center.Platform.Iam.Domain.Model.Aggregates;
 using Acme.Center.Platform.Iam.Domain.Model.Commands;
 using Acme.Center.Platform.Iam.Domain.Repositories;
 using Acme.Center.Platform.Iam.Domain.Services;
+using Acme.Center.Platform.Shared.Application.Model;
 using Acme.Center.Platform.Shared.Domain.Repositories;
 
 namespace Acme.Center.Platform.Iam.Application.Internal.CommandServices;
@@ -29,16 +30,16 @@ public class UserCommandService(
      * <param name="command">The sign in command</param>
      * <returns>The authenticated user and the JWT token</returns>
      */
-    public async Task<(User user, string token)> Handle(SignInCommand command)
+    public async Task<Result<(User user, string token)>> Handle(SignInCommand command)
     {
         var user = await userRepository.FindByUsernameAsync(command.Username);
 
         if (user == null || !hashingService.VerifyPassword(command.Password, user.PasswordHash))
-            throw new Exception("Invalid username or password");
+            return Result<(User user, string token)>.Failure("Invalid username or password");
 
         var token = tokenService.GenerateToken(user);
 
-        return (user, token);
+        return Result<(User user, string token)>.Success((user, token));
     }
 
     /**
@@ -48,10 +49,10 @@ public class UserCommandService(
      * <param name="command">The sign up command</param>
      * <returns>A confirmation message on successful creation.</returns>
      */
-    public async Task Handle(SignUpCommand command)
+    public async Task<Result> Handle(SignUpCommand command)
     {
         if (userRepository.ExistsByUsername(command.Username))
-            throw new Exception($"Username {command.Username} is already taken");
+            return Result.Failure($"Username {command.Username} is already taken");
 
         var hashedPassword = hashingService.HashPassword(command.Password);
         var user = new User(command.Username, hashedPassword);
@@ -59,10 +60,11 @@ public class UserCommandService(
         {
             await userRepository.AddAsync(user);
             await unitOfWork.CompleteAsync();
+            return Result.Success();
         }
         catch (Exception e)
         {
-            throw new Exception($"An error occurred while creating user: {e.Message}");
+            return Result.Failure($"An error occurred while creating user: {e.Message}");
         }
     }
 }

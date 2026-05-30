@@ -1,5 +1,6 @@
 using Acme.Center.Platform.Publishing.Domain.Model.Aggregate;
 using Acme.Center.Platform.Publishing.Domain.Model.Commands;
+using Acme.Center.Platform.Shared.Application.Model;
 
 namespace Acme.Center.Platform.Publishing.Application.CommandServices;
 
@@ -17,7 +18,7 @@ public interface ITutorialCommandService
     /// <returns>
     ///     The updated <see cref="Tutorial" /> entity.
     /// </returns>
-    Task<Tutorial?> Handle(AddVideoAssetToTutorialCommand command);
+    Task<Result<Tutorial>> Handle(AddVideoAssetToTutorialCommand command);
 
     /// <summary>
     ///     Handles the create tutorial command in the ACME Learning Center Platform.
@@ -28,5 +29,5 @@ public interface ITutorialCommandService
     /// <returns>
     ///     The created <see cref="Tutorial" /> entity.
     /// </returns>
-    Task<Tutorial?> Handle(CreateTutorialCommand command);
+    Task<Result<Tutorial>> Handle(CreateTutorialCommand command);
 }
