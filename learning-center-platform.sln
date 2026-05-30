@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACME.LearningCenterPlatform.API", "ACME.LearningCenterPlatform.API\ACME.LearningCenterPlatform.API.csproj", "{88F8682D-16F0-4AB0-A01B-3A52DDFF633E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acme.Center.Platform", "Acme.Center.Platform\Acme.Center.Platform.csproj", "{88F8682D-16F0-4AB0-A01B-3A52DDFF633E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
