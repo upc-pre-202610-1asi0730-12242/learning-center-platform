@@ -1,12 +1,17 @@
 using Acme.Center.Platform.Iam.Application.CommandServices;
 using Acme.Center.Platform.Iam.Application.Internal.OutboundServices;
-using Acme.Center.Platform.Iam.Domain.Model;
+using Acme.Center.Platform.Iam.Domain.Model; // For IamError enum
 using Acme.Center.Platform.Iam.Domain.Model.Aggregates;
 using Acme.Center.Platform.Iam.Domain.Model.Commands;
-using Acme.Center.Platform.Iam.Domain.Model.Errors;
 using Acme.Center.Platform.Iam.Domain.Repositories;
 using Acme.Center.Platform.Shared.Application.Model;
 using Acme.Center.Platform.Shared.Domain.Repositories;
+using Microsoft.Extensions.Localization; // For IStringLocalizer
+using Acme.Center.Platform.Resources.Errors; // For ErrorMessages resource
+using Microsoft.EntityFrameworkCore; // For DbUpdateException
+using System.Threading;
+using System.Threading.Tasks;
+using System;
 
 namespace Acme.Center.Platform.Iam.Application.Internal.CommandServices;
 
@@ -22,9 +27,12 @@ public class UserCommandService(
     IUserRepository userRepository,
     ITokenService tokenService,
     IHashingService hashingService,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IStringLocalizer<ErrorMessages> localizer) // Inject IStringLocalizer
     : IUserCommandService
 {
+    private readonly IStringLocalizer<ErrorMessages> _localizer = localizer;
+
     /**
      * <summary>
      *     Handle sign in command
@@ -38,7 +46,7 @@ public class UserCommandService(
         var user = await userRepository.FindByUsernameAsync(command.Username, cancellationToken);
 
         if (user == null || !hashingService.VerifyPassword(command.Password, user.PasswordHash))
-            return Result<(User user, string token)>.Failure(IamErrors.InvalidCredentials);
+            return Result<(User user, string token)>.Failure(IamError.InvalidCredentials, _localizer[nameof(IamError.InvalidCredentials)]);
 
         var token = tokenService.GenerateToken(user);
 
@@ -55,8 +63,8 @@ public class UserCommandService(
      */
     public async Task<Result> Handle(SignUpCommand command, CancellationToken cancellationToken)
     {
-        if (userRepository.ExistsByUsername(command.Username, cancellationToken))
-            return Result.Failure(IamErrors.UsernameAlreadyTaken);
+        if (await userRepository.ExistsByUsername(command.Username, cancellationToken))
+            return Result.Failure(IamError.UsernameAlreadyTaken, _localizer[nameof(IamError.UsernameAlreadyTaken), command.Username]);
 
         var hashedPassword = hashingService.HashPassword(command.Password);
         var user = new User(command.Username, hashedPassword);
@@ -66,9 +74,19 @@ public class UserCommandService(
             await unitOfWork.CompleteAsync(cancellationToken);
             return Result.Success();
         }
+        catch (OperationCanceledException)
+        {
+            return Result.Failure(IamError.OperationCancelled, _localizer[nameof(IamError.OperationCancelled)]);
+        }
+        catch (DbUpdateException)
+        {
+            // Log the exception details here if an ILogger is injected
+            return Result.Failure(IamError.DatabaseError, _localizer[nameof(IamError.DatabaseError)]);
+        }
         catch (Exception)
         {
-            return Result.Failure(IamErrors.UserCreationFailed);
+            // Log the exception details here if an ILogger is injected
+            return Result.Failure(IamError.InternalServerError, _localizer[nameof(IamError.InternalServerError)]);
         }
     }
 }
