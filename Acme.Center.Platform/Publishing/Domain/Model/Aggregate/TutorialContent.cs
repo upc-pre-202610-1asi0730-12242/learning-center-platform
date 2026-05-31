@@ -1,37 +1,60 @@
 using Acme.Center.Platform.Publishing.Domain.Model.Entities;
 using Acme.Center.Platform.Publishing.Domain.Model.ValueObjects;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Acme.Center.Platform.Publishing.Domain.Model.Aggregate;
 
+/// <summary>
+///     Partial class for the <see cref="Tutorial"/> aggregate, focusing on content management and publishing status.
+/// </summary>
 public partial class Tutorial : IPublishable
 {
     /// <summary>
-    ///     Default constructor for the tutorial entity
+    ///     Initializes a new instance of the <see cref="Tutorial"/> aggregate with default values.
+    ///     This constructor is primarily for persistence mechanisms.
     /// </summary>
     public Tutorial()
     {
-        Title = string.Empty;
-        Summary = string.Empty;
+        Title = string.Empty; // Initialized in the other partial part, but good for safety
+        Summary = string.Empty; // Initialized in the other partial part, but good for safety
         Assets = new List<Asset>();
         Status = EPublishingStatus.Draft;
     }
 
+    /// <summary>
+    ///     Gets the collection of <see cref="Asset"/> entities associated with this tutorial.
+    /// </summary>
     public ICollection<Asset> Assets { get; }
 
+    /// <summary>
+    ///     Gets or sets the current publishing status of the tutorial.
+    /// </summary>
     public EPublishingStatus Status { get; protected set; }
 
-
+    /// <summary>
+    ///     Indicates whether the tutorial has any readable assets.
+    /// </summary>
     public bool Readable => HasReadableAssets;
 
+    /// <summary>
+    ///     Indicates whether the tutorial has any viewable assets.
+    /// </summary>
     public bool Viewable => HasViewableAssets;
 
+    /// <summary>
+    ///     Determines if the tutorial contains any assets marked as readable.
+    /// </summary>
     public bool HasReadableAssets => Assets.Any(asset => asset.Readable);
 
+    /// <summary>
+    ///     Determines if the tutorial contains any assets marked as viewable.
+    /// </summary>
     public bool HasViewableAssets => Assets.Any(asset => asset.Viewable);
 
-
     /// <summary>
-    ///     Send the tutorial to the <see cref="EPublishingStatus.ReadyToEdit" /> status
+    ///     Transitions the tutorial's status to <see cref="EPublishingStatus.ReadyToEdit"/>
+    ///     if all associated assets are also in the <see cref="EPublishingStatus.ReadyToEdit"/> status.
     /// </summary>
     public void SendToEdit()
     {
@@ -40,7 +63,8 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Send the tutorial to the <see cref="EPublishingStatus.ReadyToApproval" /> status
+    ///     Transitions the tutorial's status to <see cref="EPublishingStatus.ReadyToApproval"/>
+    ///     if all associated assets are also in the <see cref="EPublishingStatus.ReadyToApproval"/> status.
     /// </summary>
     public void SendToApproval()
     {
@@ -49,13 +73,9 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Approve and lock the tutorial
+    ///     Approves and locks the tutorial, transitioning its status to <see cref="EPublishingStatus.ApprovedAndLocked"/>.
+    ///     This occurs only if all associated assets are also in the <see cref="EPublishingStatus.ApprovedAndLocked"/> status.
     /// </summary>
-    /// <remarks>
-    ///     This method is used to approve and lock the tutorial. If all assets have the status
-    ///     <see cref="EPublishingStatus.ApprovedAndLocked" />, the tutorial status will be set to
-    ///     <see cref="EPublishingStatus.ApprovedAndLocked" />.
-    /// </remarks>
     public void ApproveAndLock()
     {
         if (HasAllAssetsWithStatus(EPublishingStatus.ApprovedAndLocked))
@@ -63,19 +83,15 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Reject the tutorial
+    ///     Rejects the tutorial, transitioning its status back to <see cref="EPublishingStatus.Draft"/>.
     /// </summary>
-    /// <remarks>
-    ///     This method is used to reject the tutorial. The tutorial status will be set to
-    ///     <see cref="EPublishingStatus.Draft" />.
-    /// </remarks>
     public void Reject()
     {
         Status = EPublishingStatus.Draft;
     }
 
     /// <summary>
-    ///     Return the tutorial to the <see cref="EPublishingStatus.ReadyToEdit" /> status
+    ///     Returns the tutorial to the <see cref="EPublishingStatus.ReadyToEdit"/> status.
     /// </summary>
     public void ReturnToEdit()
     {
@@ -83,14 +99,10 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Verify if an image asset already exists in the tutorial
+    ///     Checks if an image asset with the given URL already exists within the tutorial.
     /// </summary>
-    /// <param name="imageUrl">
-    ///     The image url to verify
-    /// </param>
-    /// <returns>
-    ///     True if the image asset exists, false otherwise
-    /// </returns>
+    /// <param name="imageUrl">The URL of the image to check.</param>
+    /// <returns><c>true</c> if the image asset exists; otherwise, <c>false</c>.</returns>
     private bool ExistsImageByUrl(string imageUrl)
     {
         return Assets.Any(asset => asset.Type == EAssetType.Image &&
@@ -98,14 +110,10 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Verify if a video asset already exists in the tutorial
+    ///     Checks if a video asset with the given URL already exists within the tutorial.
     /// </summary>
-    /// <param name="videoUrl">
-    ///     The video url to verify
-    /// </param>
-    /// <returns>
-    ///     True if the video asset exists, false otherwise
-    /// </returns>
+    /// <param name="videoUrl">The URL of the video to check.</param>
+    /// <returns><c>true</c> if the video asset exists; otherwise, <c>false</c>.</returns>
     private bool ExistsVideoByUrl(string videoUrl)
     {
         return Assets.Any(asset => asset.Type == EAssetType.Video &&
@@ -113,14 +121,10 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Verify if a readable content asset already exists in the tutorial
+    ///     Checks if a readable content asset with the given content already exists within the tutorial.
     /// </summary>
-    /// <param name="content">
-    ///     The content to verify
-    /// </param>
-    /// <returns>
-    ///     True if the readable content asset exists, false otherwise
-    /// </returns>
+    /// <param name="content">The readable content string to check.</param>
+    /// <returns><c>true</c> if the readable content asset exists; otherwise, <c>false</c>.</returns>
     private bool ExistsReadableContent(string content)
     {
         return Assets.Any(asset => asset.Type == EAssetType.ReadableContentItem &&
@@ -128,25 +132,19 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Verify if all assets have the same status
+    ///     Determines if all assets associated with the tutorial currently have the specified publishing status.
     /// </summary>
-    /// <param name="status">
-    ///     The status to verify
-    /// </param>
-    /// <returns>
-    ///     True if all assets have the same status, false otherwise
-    /// </returns>
+    /// <param name="status">The <see cref="EPublishingStatus"/> to check against.</param>
+    /// <returns><c>true</c> if all assets have the specified status; otherwise, <c>false</c>.</returns>
     private bool HasAllAssetsWithStatus(EPublishingStatus status)
     {
         return Assets.All(asset => asset.Status == status);
     }
 
     /// <summary>
-    ///     Add an image asset to the tutorial
+    ///     Adds a new image asset to the tutorial if it does not already exist.
     /// </summary>
-    /// <param name="imageUrl">
-    ///     The image url to add
-    /// </param>
+    /// <param name="imageUrl">The URL of the image to add.</param>
     public void AddImage(string imageUrl)
     {
         if (ExistsImageByUrl(imageUrl)) return;
@@ -154,11 +152,9 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Add a video asset to the tutorial
+    ///     Adds a new video asset to the tutorial if it does not already exist.
     /// </summary>
-    /// <param name="videoUrl">
-    ///     The video url to add
-    /// </param>
+    /// <param name="videoUrl">The URL of the video to add.</param>
     public void AddVideo(string videoUrl)
     {
         if (ExistsVideoByUrl(videoUrl)) return;
@@ -166,11 +162,9 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Add a readable content asset to the tutorial
+    ///     Adds a new readable content asset to the tutorial if it does not already exist.
     /// </summary>
-    /// <param name="content">
-    ///     The content to add
-    /// </param>
+    /// <param name="content">The readable content string to add.</param>
     public void AddReadableContent(string content)
     {
         if (ExistsReadableContent(content)) return;
@@ -178,11 +172,9 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Remove an asset from the tutorial
+    ///     Removes a specific asset from the tutorial based on its unique identifier.
     /// </summary>
-    /// <param name="identifier">
-    ///     The asset identifier to remove
-    /// </param>
+    /// <param name="identifier">The <see cref="AcmeAssetIdentifier"/> of the asset to remove.</param>
     public void RemoveAsset(AcmeAssetIdentifier identifier)
     {
         var asset = Assets.FirstOrDefault(a => a.AssetIdentifier == identifier);
@@ -191,7 +183,7 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Clear all assets from the tutorial
+    ///     Clears all assets from the tutorial.
     /// </summary>
     public void ClearAssets()
     {
@@ -199,13 +191,12 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Build and return the current tutorial content
+    ///     Constructs and returns a list of <see cref="ContentItem"/> representing the tutorial's current assets.
     /// </summary>
     /// <remarks>
-    ///     This method is used to build and return the current tutorial content. It returns a list of
-    ///     <see cref="ContentItem" /> containing the tutorial assets.
+    ///     Each <see cref="ContentItem"/> includes the asset's type and its content as a string.
     /// </remarks>
-    /// <returns></returns>
+    /// <returns>A <see cref="List{ContentItem}"/> of the tutorial's assets.</returns>
     public List<ContentItem> GetContent()
     {
         var content = new List<ContentItem>();
