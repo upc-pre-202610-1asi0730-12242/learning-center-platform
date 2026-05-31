@@ -1,7 +1,7 @@
 using System.Net.Mime;
 using Acme.Center.Platform.Profiles.Application.CommandServices;
 using Acme.Center.Platform.Profiles.Application.QueryServices;
-using Acme.Center.Platform.Profiles.Domain.Model;
+using Acme.Center.Platform.Profiles.Domain.Model; // For ProfilesError enum
 using Acme.Center.Platform.Profiles.Domain.Model.Queries;
 using Acme.Center.Platform.Profiles.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Profiles.Interfaces.Rest.Transform;
@@ -9,10 +9,10 @@ using Acme.Center.Platform.Resources.Errors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-// For IStringLocalizer
-// For ErrorMessages resource
-
-// For ProfilesError enum
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Acme.Center.Platform.Profiles.Interfaces.Rest;
 

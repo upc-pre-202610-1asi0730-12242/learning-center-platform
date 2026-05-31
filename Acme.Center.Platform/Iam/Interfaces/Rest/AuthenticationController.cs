@@ -1,6 +1,6 @@
 using System.Net.Mime;
 using Acme.Center.Platform.Iam.Application.CommandServices;
-using Acme.Center.Platform.Iam.Domain.Model;
+using Acme.Center.Platform.Iam.Domain.Model; // For IamError enum
 using Acme.Center.Platform.Iam.Infrastructure.Pipeline.Middleware.Attributes;
 using Acme.Center.Platform.Iam.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Iam.Interfaces.Rest.Transform;
@@ -8,10 +8,8 @@ using Acme.Center.Platform.Resources.Errors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-// For IamError enum
-// For IStringLocalizer
-
-// For ErrorMessages resource
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Acme.Center.Platform.Iam.Interfaces.Rest;
 

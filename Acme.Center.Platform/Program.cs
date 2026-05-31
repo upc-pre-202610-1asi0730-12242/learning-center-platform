@@ -33,6 +33,9 @@ using Cortex.Mediator.Commands;
 using Cortex.Mediator.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using Microsoft.Extensions.Localization; // Added for IStringLocalizer
+using Acme.Center.Platform.Resources.Errors; // Added for ErrorMessages
+using Acme.Center.Platform.Resources.Shared; // Added for Common
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +71,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+// Explicitly register IStringLocalizer for ErrorMessages and Common
+builder.Services.AddSingleton<IStringLocalizer<ErrorMessages>, StringLocalizer<ErrorMessages>>();
+builder.Services.AddSingleton<IStringLocalizer<Commons>, StringLocalizer<Commons>>();
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -130,7 +138,7 @@ builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("Toke
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserCommandService, UserCommandService>();
-builder.Services.AddScoped<IUserQueryService, UserQueryService>();
+builder.Services.AddScoped<IUserQueryService, IUserQueryService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
