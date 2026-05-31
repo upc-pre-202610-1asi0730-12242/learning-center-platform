@@ -31,5 +31,5 @@ public interface IUserRepository : IBaseRepository<User>
      * <param name="cancellationToken">The cancellation token</param>
      * <returns>True if the user exists, false otherwise</returns>
      */
-    bool ExistsByUsername(string username, CancellationToken cancellationToken);
+    Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken);
 }

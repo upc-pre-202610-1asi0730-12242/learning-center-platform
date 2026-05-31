@@ -1,6 +1,6 @@
 using System.Net.Mime;
 using Acme.Center.Platform.Iam.Application.QueryServices;
-using Acme.Center.Platform.Iam.Domain.Model; // For IamError enum
+using Acme.Center.Platform.Iam.Domain.Model;
 using Acme.Center.Platform.Iam.Domain.Model.Queries;
 using Acme.Center.Platform.Iam.Infrastructure.Pipeline.Middleware.Attributes;
 using Acme.Center.Platform.Iam.Interfaces.Rest.Resources;
@@ -9,10 +9,7 @@ using Acme.Center.Platform.Resources.Errors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+// For IamError enum
 
 namespace Acme.Center.Platform.Iam.Interfaces.Rest;
 

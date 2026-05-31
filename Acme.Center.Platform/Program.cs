@@ -2,7 +2,6 @@ using Acme.Center.Platform.Iam.Application.Acl;
 using Acme.Center.Platform.Iam.Application.CommandServices;
 using Acme.Center.Platform.Iam.Application.Internal.CommandServices;
 using Acme.Center.Platform.Iam.Application.Internal.OutboundServices;
-using Acme.Center.Platform.Iam.Application.Internal.QueryServices;
 using Acme.Center.Platform.Iam.Application.QueryServices;
 using Acme.Center.Platform.Iam.Domain.Repositories;
 using Acme.Center.Platform.Iam.Infrastructure.Hashing.BCrypt.Services;
@@ -23,6 +22,8 @@ using Acme.Center.Platform.Publishing.Application.Internal.QueryServices;
 using Acme.Center.Platform.Publishing.Application.QueryServices;
 using Acme.Center.Platform.Publishing.Domain.Repositories;
 using Acme.Center.Platform.Publishing.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Acme.Center.Platform.Resources.Errors;
+using Acme.Center.Platform.Resources.Shared;
 using Acme.Center.Platform.Shared.Domain.Repositories;
 using Acme.Center.Platform.Shared.Infrastructure.Interfaces.AspNetCore.Configuration;
 using Acme.Center.Platform.Shared.Infrastructure.Mediator.Cortex.Configuration;
@@ -32,10 +33,12 @@ using Acme.Center.Platform.Shared.Infrastructure.Pipeline.Middleware.Extensions;
 using Cortex.Mediator.Commands;
 using Cortex.Mediator.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
-using Microsoft.Extensions.Localization; // Added for IStringLocalizer
-using Acme.Center.Platform.Resources.Errors; // Added for ErrorMessages
-using Acme.Center.Platform.Resources.Shared; // Added for Common
+// Added for IStringLocalizer
+// Added for ErrorMessages
+
+// Added for Common
 
 var builder = WebApplication.CreateBuilder(args);
 

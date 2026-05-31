@@ -1,5 +1,5 @@
 using Acme.Center.Platform.Publishing.Application.CommandServices;
-using Acme.Center.Platform.Publishing.Domain.Model; // For PublishingError enum
+using Acme.Center.Platform.Publishing.Domain.Model;
 using Acme.Center.Platform.Publishing.Domain.Model.Aggregate;
 using Acme.Center.Platform.Publishing.Domain.Model.Commands;
 using Acme.Center.Platform.Publishing.Domain.Repositories;
@@ -8,9 +8,7 @@ using Acme.Center.Platform.Shared.Application.Model;
 using Acme.Center.Platform.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using System.Threading;
-using System.Threading.Tasks;
-using System;
+// For PublishingError enum
 
 namespace Acme.Center.Platform.Publishing.Application.Internal.CommandServices;
 

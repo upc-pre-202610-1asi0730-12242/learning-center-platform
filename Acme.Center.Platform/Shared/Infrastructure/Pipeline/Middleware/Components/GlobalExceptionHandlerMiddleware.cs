@@ -1,12 +1,12 @@
 using System.Net.Mime;
 using System.Text.Json;
 using Acme.Center.Platform.Resources.Errors;
-using Acme.Center.Platform.Resources.Shared; // Corrected using directive
+using Acme.Center.Platform.Resources.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using System;
-using System.Threading.Tasks;
-using System.Threading; // For OperationCanceledException
+// Corrected using directive
+
+// For OperationCanceledException
 
 namespace Acme.Center.Platform.Shared.Infrastructure.Pipeline.Middleware.Components;
 
@@ -20,10 +20,10 @@ public class GlobalExceptionHandlerMiddleware(
     RequestDelegate next,
     ILogger<GlobalExceptionHandlerMiddleware> logger,
     IStringLocalizer<ErrorMessages> errorLocalizer, // Inject IStringLocalizer for error messages
-    IStringLocalizer<Common> // Corrected from Commons to Common
+    IStringLocalizer<Commons> // Corrected from Commons to Common
         commonLocalizer) // Inject IStringLocalizer for common messages like "Internal Server Error"
 {
-    private readonly IStringLocalizer<Common> _commonLocalizer = commonLocalizer; // Corrected from Commons to Common
+    private readonly IStringLocalizer<Commons> _commonLocalizer = commonLocalizer; // Corrected from Commons to Common
     private readonly IStringLocalizer<ErrorMessages> _errorLocalizer = errorLocalizer;
 
     /**

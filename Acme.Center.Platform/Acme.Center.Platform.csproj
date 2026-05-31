@@ -33,12 +33,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="Resources\Errors\ErrorMessages.es.resx">
-        <DependentUpon>ErrorMessages.cs</DependentUpon>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Iam\IamMessages.es.resx">
-        <DependentUpon>IamMessages.cs</DependentUpon>
-      </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Errors\ErrorMessages.es.resx">
+            <DependentUpon>ErrorMessages.cs</DependentUpon>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Iam\IamMessages.es.resx">
+            <DependentUpon>IamMessages.cs</DependentUpon>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

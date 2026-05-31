@@ -37,8 +37,8 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
      * <param name="cancellationToken">The cancellation token</param>
      * <returns>True if the user exists, false otherwise</returns>
      */
-    public bool ExistsByUsername(string username, CancellationToken cancellationToken)
+    public async Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken)
     {
-        return Context.Set<User>().Any(user => user.Username.Equals(username));
+        return await Context.Set<User>().AnyAsync(user => user.Username.Equals(username), cancellationToken);
     }
 }

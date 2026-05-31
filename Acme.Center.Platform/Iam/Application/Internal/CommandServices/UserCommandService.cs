@@ -1,6 +1,6 @@
 using Acme.Center.Platform.Iam.Application.CommandServices;
 using Acme.Center.Platform.Iam.Application.Internal.OutboundServices;
-using Acme.Center.Platform.Iam.Domain.Model; // For IamError enum
+using Acme.Center.Platform.Iam.Domain.Model;
 using Acme.Center.Platform.Iam.Domain.Model.Aggregates;
 using Acme.Center.Platform.Iam.Domain.Model.Commands;
 using Acme.Center.Platform.Iam.Domain.Repositories;
@@ -9,9 +9,7 @@ using Acme.Center.Platform.Shared.Application.Model;
 using Acme.Center.Platform.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using System.Threading;
-using System.Threading.Tasks;
-using System;
+// For IamError enum
 
 namespace Acme.Center.Platform.Iam.Application.Internal.CommandServices;
 
@@ -65,7 +63,7 @@ public class UserCommandService(
      */
     public async Task<Result> Handle(SignUpCommand command, CancellationToken cancellationToken)
     {
-        if (await userRepository.ExistsByUsername(command.Username, cancellationToken))
+        if (await userRepository.ExistsByUsernameAsync(command.Username, cancellationToken))
             return Result.Failure(IamError.UsernameAlreadyTaken,
                 _localizer[nameof(IamError.UsernameAlreadyTaken), command.Username]);
 

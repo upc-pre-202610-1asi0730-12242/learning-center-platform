@@ -1,7 +1,7 @@
 using System.Net.Mime;
 using Acme.Center.Platform.Publishing.Application.CommandServices;
 using Acme.Center.Platform.Publishing.Application.QueryServices;
-using Acme.Center.Platform.Publishing.Domain.Model; // For PublishingError enum
+using Acme.Center.Platform.Publishing.Domain.Model;
 using Acme.Center.Platform.Publishing.Domain.Model.Queries;
 using Acme.Center.Platform.Publishing.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Publishing.Interfaces.Rest.Transform;
@@ -9,10 +9,7 @@ using Acme.Center.Platform.Resources.Errors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+// For PublishingError enum
 
 namespace Acme.Center.Platform.Publishing.Interfaces.Rest;
 
