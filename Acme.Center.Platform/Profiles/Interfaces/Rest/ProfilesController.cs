@@ -1,15 +1,19 @@
 using System.Net.Mime;
 using Acme.Center.Platform.Profiles.Application.CommandServices;
 using Acme.Center.Platform.Profiles.Application.QueryServices;
-using Acme.Center.Platform.Profiles.Domain.Model;
+using Acme.Center.Platform.Profiles.Domain.Model; // For ProfilesError enum
 using Acme.Center.Platform.Profiles.Domain.Model.Queries;
 using Acme.Center.Platform.Profiles.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Profiles.Interfaces.Rest.Transform;
 using Acme.Center.Platform.Resources.Errors;
+using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails; // For ProblemDetailsFactory
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-// For ProfilesError enum
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Acme.Center.Platform.Profiles.Interfaces.Rest;
 
@@ -20,10 +24,12 @@ namespace Acme.Center.Platform.Profiles.Interfaces.Rest;
 public class ProfilesController(
     IProfileCommandService profileCommandService,
     IProfileQueryService profileQueryService,
-    IStringLocalizer<ErrorMessages> localizer) // Inject IStringLocalizer
+    IStringLocalizer<ErrorMessages> errorLocalizer, // Renamed for clarity
+    ProblemDetailsFactory problemDetailsFactory) // Inject ProblemDetailsFactory
     : ControllerBase
 {
-    private readonly IStringLocalizer<ErrorMessages> _localizer = localizer;
+    private readonly IStringLocalizer<ErrorMessages> _errorLocalizer = errorLocalizer;
+    private readonly ProblemDetailsFactory _problemDetailsFactory = problemDetailsFactory;
 
     [HttpGet("{profileId:int}")]
     [SwaggerOperation("Get Profile by Id", "Get a profile by its unique identifier.", OperationId = "GetProfileById")]
@@ -33,14 +39,14 @@ public class ProfilesController(
     {
         var getProfileByIdQuery = new GetProfileByIdQuery(profileId);
         var profile = await profileQueryService.Handle(getProfileByIdQuery, cancellationToken);
-        if (profile is null)
-            return Problem(
-                statusCode: StatusCodes.Status404NotFound,
-                title: _localizer[nameof(ProfilesError.ProfileNotFound)],
-                detail: _localizer[nameof(ProfilesError.ProfileNotFound)]
-            );
-        var profileResource = ProfileResourceFromEntityAssembler.ToResourceFromEntity(profile);
-        return Ok(profileResource);
+
+        return ProfilesActionResultAssembler.ToActionResultFromGetProfileByIdResult(
+            this,
+            profile,
+            _errorLocalizer,
+            _problemDetailsFactory,
+            (foundProfile) => Ok(ProfileResourceFromEntityAssembler.ToResourceFromEntity(foundProfile))
+        );
     }
 
     [HttpPost]
@@ -51,26 +57,14 @@ public class ProfilesController(
     {
         var createProfileCommand = CreateProfileCommandFromResourceAssembler.ToCommandFromResource(resource);
         var result = await profileCommandService.Handle(createProfileCommand, cancellationToken);
-        if (result.IsFailure)
-        {
-            var statusCode = result.Error switch
-            {
-                ProfilesError.EmailAlreadyRegistered => StatusCodes.Status409Conflict,
-                ProfilesError.OperationCancelled => StatusCodes.Status409Conflict,
-                ProfilesError.DatabaseError => StatusCodes.Status500InternalServerError,
-                ProfilesError.InternalServerError => StatusCodes.Status500InternalServerError,
-                _ => StatusCodes.Status400BadRequest
-            };
-            return Problem(
-                statusCode: statusCode,
-                title: _localizer[$"{result.Error}"],
-                detail: result.Message
-            );
-        }
 
-        var profile = result.Value;
-        var profileResource = ProfileResourceFromEntityAssembler.ToResourceFromEntity(profile);
-        return CreatedAtAction(nameof(GetProfileById), new { profileId = profile.Id }, profileResource);
+        return ProfilesActionResultAssembler.ToActionResultFromCreateProfileResult(
+            this,
+            result,
+            _errorLocalizer,
+            _problemDetailsFactory,
+            (createdProfile) => CreatedAtAction(nameof(GetProfileById), new { profileId = createdProfile.Id }, ProfileResourceFromEntityAssembler.ToResourceFromEntity(createdProfile))
+        );
     }
 
     [HttpGet]

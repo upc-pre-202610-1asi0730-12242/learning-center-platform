@@ -3,8 +3,15 @@ using Acme.Center.Platform.Publishing.Application.QueryServices;
 using Acme.Center.Platform.Publishing.Domain.Model.Queries;
 using Acme.Center.Platform.Publishing.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Publishing.Interfaces.Rest.Transform;
+using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails; // For ProblemDetailsFactory
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization; // Needed for the assembler
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Acme.Center.Platform.Resources.Errors;
 
 namespace Acme.Center.Platform.Publishing.Interfaces.Rest;
 
@@ -12,8 +19,15 @@ namespace Acme.Center.Platform.Publishing.Interfaces.Rest;
 [Route("api/v1/categories/{categoryId:int}/tutorials")]
 [Produces(MediaTypeNames.Application.Json)]
 [Tags("Categories")]
-public class CategoryTutorialsController(ITutorialQueryService tutorialQueryService) : ControllerBase
+public class CategoryTutorialsController(
+    ITutorialQueryService tutorialQueryService,
+    ProblemDetailsFactory problemDetailsFactory, // Inject ProblemDetailsFactory
+    IStringLocalizer<ErrorMessages> errorLocalizer) // Inject ErrorMessages localizer
+    : ControllerBase
 {
+    private readonly ProblemDetailsFactory _problemDetailsFactory = problemDetailsFactory;
+    private readonly IStringLocalizer<ErrorMessages> _errorLocalizer = errorLocalizer;
+
     /// <summary>
     ///     Get all tutorials by category id
     /// </summary>
@@ -34,7 +48,13 @@ public class CategoryTutorialsController(ITutorialQueryService tutorialQueryServ
     {
         var getTutorialsByCategoryIdQuery = new GetAllTutorialsByCategoryIdQuery(categoryId);
         var tutorials = await tutorialQueryService.Handle(getTutorialsByCategoryIdQuery, cancellationToken);
-        var tutorialResources = tutorials.Select(TutorialResourceFromEntityAssembler.ToResourceFromEntity);
-        return Ok(tutorialResources);
+
+        return PublishingActionResultAssembler.ToActionResultFromGetAllTutorialsByCategoryIdResult(
+            this,
+            tutorials,
+            _errorLocalizer, // Pass localizer
+            _problemDetailsFactory, // Pass factory
+            (foundTutorials) => Ok(foundTutorials.Select(TutorialResourceFromEntityAssembler.ToResourceFromEntity))
+        );
     }
 }

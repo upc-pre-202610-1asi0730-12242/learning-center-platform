@@ -1,27 +1,22 @@
 using System.Net.Mime;
 using Acme.Center.Platform.Publishing.Application.CommandServices;
 using Acme.Center.Platform.Publishing.Application.QueryServices;
-using Acme.Center.Platform.Publishing.Domain.Model;
+using Acme.Center.Platform.Publishing.Domain.Model; // For PublishingError enum
 using Acme.Center.Platform.Publishing.Domain.Model.Queries;
 using Acme.Center.Platform.Publishing.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Publishing.Interfaces.Rest.Transform;
 using Acme.Center.Platform.Resources.Errors;
+using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails; // For ProblemDetailsFactory
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-// For PublishingError enum
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Acme.Center.Platform.Publishing.Interfaces.Rest;
 
-/// <summary>
-///     The category controller
-/// </summary>
-/// <param name="categoryCommandService">
-///     The <see cref="ICategoryCommandService" /> category command service
-/// </param>
-/// <param name="categoryQueryService">
-///     The <see cref="ICategoryQueryService" /> category query service
-/// </param>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces(MediaTypeNames.Application.Json)]
@@ -29,21 +24,13 @@ namespace Acme.Center.Platform.Publishing.Interfaces.Rest;
 public class CategoriesController(
     ICategoryCommandService categoryCommandService,
     ICategoryQueryService categoryQueryService,
-    IStringLocalizer<ErrorMessages> localizer) // Inject IStringLocalizer
+    IStringLocalizer<ErrorMessages> errorLocalizer, // Renamed for clarity
+    ProblemDetailsFactory problemDetailsFactory) // Inject ProblemDetailsFactory
     : ControllerBase
 {
-    private readonly IStringLocalizer<ErrorMessages> _localizer = localizer;
+    private readonly IStringLocalizer<ErrorMessages> _errorLocalizer = errorLocalizer;
+    private readonly ProblemDetailsFactory _problemDetailsFactory = problemDetailsFactory;
 
-    /// <summary>
-    ///     Get category by id
-    /// </summary>
-    /// <param name="categoryId">
-    ///     The category id
-    /// </param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>
-    ///     The <see cref="CategoryResource" /> category
-    /// </returns>
     [HttpGet("{categoryId:int}")]
     [SwaggerOperation(
         Summary = "Get all categories",
@@ -55,26 +42,16 @@ public class CategoriesController(
     {
         var getCategoryByIdQuery = new GetCategoryByIdQuery(categoryId);
         var category = await categoryQueryService.Handle(getCategoryByIdQuery, cancellationToken);
-        if (category is null)
-            return Problem(
-                statusCode: StatusCodes.Status404NotFound,
-                title: _localizer[nameof(PublishingError.CategoryNotFound)],
-                detail: _localizer[nameof(PublishingError.CategoryNotFound)]
-            );
-        var resource = CategoryResourceFromEntityAssembler.ToResourceFromEntity(category);
-        return Ok(resource);
+
+        return PublishingActionResultAssembler.ToActionResultFromGetCategoryByIdResult(
+            this,
+            category,
+            _errorLocalizer,
+            _problemDetailsFactory,
+            (foundCategory) => Ok(CategoryResourceFromEntityAssembler.ToResourceFromEntity(foundCategory))
+        );
     }
 
-    /// <summary>
-    ///     Create a new category
-    /// </summary>
-    /// <param name="resource">
-    ///     The <see cref="CreateCategoryResource" /> category resource
-    /// </param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>
-    ///     The <see cref="CategoryResource" /> category created, or a bad request if the category could not be created
-    /// </returns>
     [HttpPost]
     [SwaggerOperation(
         Summary = "Create a new category",
@@ -87,34 +64,16 @@ public class CategoriesController(
     {
         var createCategoryCommand = CreateCategoryCommandFromResourceAssembler.ToCommandFromResource(resource);
         var result = await categoryCommandService.Handle(createCategoryCommand, cancellationToken);
-        if (result.IsFailure)
-        {
-            var statusCode = result.Error switch
-            {
-                PublishingError.OperationCancelled => StatusCodes.Status409Conflict,
-                PublishingError.DatabaseError => StatusCodes.Status500InternalServerError,
-                PublishingError.InternalServerError => StatusCodes.Status500InternalServerError,
-                _ => StatusCodes.Status400BadRequest
-            };
-            return Problem(
-                statusCode: statusCode,
-                title: _localizer[$"{result.Error}"],
-                detail: result.Message
-            );
-        }
 
-        var category = result.Value;
-        var categoryResource = CategoryResourceFromEntityAssembler.ToResourceFromEntity(category);
-        return CreatedAtAction(nameof(GetCategoryById), new { categoryId = category.Id }, categoryResource);
+        return PublishingActionResultAssembler.ToActionResultFromCreateCategoryResult(
+            this,
+            result,
+            _errorLocalizer,
+            _problemDetailsFactory,
+            (createdCategory) => CreatedAtAction(nameof(GetCategoryById), new { categoryId = createdCategory.Id }, CategoryResourceFromEntityAssembler.ToResourceFromEntity(createdCategory))
+        );
     }
 
-    /// <summary>
-    ///     Get all categories
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>
-    ///     The list of <see cref="CategoryResource" /> categories
-    /// </returns>
     [HttpGet]
     [SwaggerOperation(
         Summary = "Get all categories",

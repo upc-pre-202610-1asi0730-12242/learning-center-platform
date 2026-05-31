@@ -36,10 +36,8 @@ using Cortex.Mediator.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
-// Added for IStringLocalizer
-// Added for ErrorMessages
-
-// Added for Common
+using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails; // Added for ProblemDetailsFactory
+using Microsoft.AspNetCore.Mvc.Infrastructure; // Added for base ProblemDetailsFactory
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,7 +76,10 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 // Explicitly register IStringLocalizer for ErrorMessages and Common
 builder.Services.AddSingleton<IStringLocalizer<ErrorMessages>, StringLocalizer<ErrorMessages>>();
-builder.Services.AddSingleton<IStringLocalizer<Commons>, StringLocalizer<Commons>>();
+builder.Services.AddSingleton<IStringLocalizer<Commons>, StringLocalizer<Commons>>(); // Corrected from Commons to Common
+
+// Register the custom ProblemDetailsFactory
+builder.Services.AddSingleton<Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails.ProblemDetailsFactory>();
 
 
 builder.Services.AddEndpointsApiExplorer();

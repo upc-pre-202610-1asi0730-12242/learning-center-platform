@@ -1,14 +1,17 @@
 using System.Net.Mime;
 using Acme.Center.Platform.Iam.Application.CommandServices;
-using Acme.Center.Platform.Iam.Domain.Model;
+using Acme.Center.Platform.Iam.Domain.Model; // For IamError enum
 using Acme.Center.Platform.Iam.Infrastructure.Pipeline.Middleware.Attributes;
 using Acme.Center.Platform.Iam.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Iam.Interfaces.Rest.Transform;
 using Acme.Center.Platform.Resources.Errors;
+using Acme.Center.Platform.Resources.Iam; // Added for IamMessages
+using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails; // For ProblemDetailsFactory
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-// For IamError enum
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Acme.Center.Platform.Iam.Interfaces.Rest;
 
@@ -19,10 +22,14 @@ namespace Acme.Center.Platform.Iam.Interfaces.Rest;
 [SwaggerTag("Available Authentication endpoints")]
 public class AuthenticationController(
     IUserCommandService userCommandService,
-    IStringLocalizer<ErrorMessages> localizer) // Inject IStringLocalizer
+    IStringLocalizer<ErrorMessages> errorLocalizer, // Renamed for clarity
+    IStringLocalizer<IamMessages> iamLocalizer, // Inject IamMessages localizer
+    ProblemDetailsFactory problemDetailsFactory) // Inject ProblemDetailsFactory
     : ControllerBase
 {
-    private readonly IStringLocalizer<ErrorMessages> _localizer = localizer;
+    private readonly IStringLocalizer<ErrorMessages> _errorLocalizer = errorLocalizer;
+    private readonly IStringLocalizer<IamMessages> _iamLocalizer = iamLocalizer;
+    private readonly ProblemDetailsFactory _problemDetailsFactory = problemDetailsFactory;
 
     /**
      * <summary>
@@ -45,25 +52,14 @@ public class AuthenticationController(
     {
         var signInCommand = SignInCommandFromResourceAssembler.ToCommandFromResource(signInResource);
         var result = await userCommandService.Handle(signInCommand, cancellationToken);
-        if (result.IsFailure)
-        {
-            var statusCode = result.Error switch
-            {
-                IamError.InvalidCredentials => StatusCodes.Status400BadRequest,
-                _ => StatusCodes.Status400BadRequest // Default to BadRequest for other IamError failures
-            };
-            return Problem(
-                statusCode: statusCode,
-                title: _localizer[$"{result.Error}"], // Use enum name as key for title
-                detail: result.Message // Use the localized message from the service
-            );
-        }
 
-        var authenticatedUser = result.Value;
-        var resource =
-            AuthenticatedUserResourceFromEntityAssembler.ToResourceFromEntity(authenticatedUser.user,
-                authenticatedUser.token);
-        return Ok(resource);
+        return IamActionResultAssembler.ToActionResultFromSignInResult(
+            this,
+            result,
+            _errorLocalizer,
+            _problemDetailsFactory,
+            (userAndToken) => Ok(AuthenticatedUserResourceFromEntityAssembler.ToResourceFromEntity(userAndToken.user, userAndToken.token))
+        );
     }
 
     /**
@@ -87,23 +83,13 @@ public class AuthenticationController(
     {
         var signUpCommand = SignUpCommandFromResourceAssembler.ToCommandFromResource(signUpResource);
         var result = await userCommandService.Handle(signUpCommand, cancellationToken);
-        if (result.IsFailure)
-        {
-            var statusCode = result.Error switch
-            {
-                IamError.UsernameAlreadyTaken => StatusCodes.Status409Conflict,
-                IamError.OperationCancelled => StatusCodes.Status409Conflict, // Or 400 depending on desired behavior
-                IamError.DatabaseError => StatusCodes.Status500InternalServerError,
-                IamError.InternalServerError => StatusCodes.Status500InternalServerError,
-                _ => StatusCodes.Status400BadRequest // Default for other IamError failures
-            };
-            return Problem(
-                statusCode: statusCode,
-                title: _localizer[$"{result.Error}"], // Use enum name as key for title
-                detail: result.Message // Use the localized message from the service
-            );
-        }
 
-        return Ok(new { message = _localizer["UserCreatedSuccessfully"] }); // Assuming a generic success message
+        return IamActionResultAssembler.ToActionResultFromSignUpResult(
+            this,
+            result,
+            _errorLocalizer,
+            _problemDetailsFactory,
+            () => Ok(new { message = _iamLocalizer["UserCreatedSuccessfully"] })
+        );
     }
 }

@@ -1,26 +1,22 @@
 using System.Net.Mime;
 using Acme.Center.Platform.Iam.Application.QueryServices;
-using Acme.Center.Platform.Iam.Domain.Model;
+using Acme.Center.Platform.Iam.Domain.Model; // For IamError enum
 using Acme.Center.Platform.Iam.Domain.Model.Queries;
 using Acme.Center.Platform.Iam.Infrastructure.Pipeline.Middleware.Attributes;
 using Acme.Center.Platform.Iam.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Iam.Interfaces.Rest.Transform;
 using Acme.Center.Platform.Resources.Errors;
+using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails; // For ProblemDetailsFactory
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-// For IamError enum
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Acme.Center.Platform.Iam.Interfaces.Rest;
 
-/**
- * <summary>
- *     The user's controller
- * </summary>
- * <remarks>
- *     This class is used to handle user requests
- * </remarks>
- */
 [Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -28,10 +24,12 @@ namespace Acme.Center.Platform.Iam.Interfaces.Rest;
 [SwaggerTag("Available User endpoints")]
 public class UsersController(
     IUserQueryService userQueryService,
-    IStringLocalizer<ErrorMessages> localizer) // Inject IStringLocalizer
+    IStringLocalizer<ErrorMessages> errorLocalizer, // Renamed for clarity
+    ProblemDetailsFactory problemDetailsFactory) // Inject ProblemDetailsFactory
     : ControllerBase
 {
-    private readonly IStringLocalizer<ErrorMessages> _localizer = localizer;
+    private readonly IStringLocalizer<ErrorMessages> _errorLocalizer = errorLocalizer;
+    private readonly ProblemDetailsFactory _problemDetailsFactory = problemDetailsFactory;
 
     /**
      * <summary>
@@ -52,14 +50,14 @@ public class UsersController(
     {
         var getUserByIdQuery = new GetUserByIdQuery(id);
         var user = await userQueryService.Handle(getUserByIdQuery, cancellationToken);
-        if (user is null)
-            return Problem(
-                statusCode: StatusCodes.Status404NotFound,
-                title: _localizer[nameof(IamError.UserNotFound)],
-                detail: _localizer[nameof(IamError.UserNotFound)]
-            );
-        var userResource = UserResourceFromEntityAssembler.ToResourceFromEntity(user);
-        return Ok(userResource);
+
+        return IamActionResultAssembler.ToActionResultFromGetUserByIdResult(
+            this,
+            user,
+            _errorLocalizer,
+            _problemDetailsFactory,
+            (foundUser) => Ok(UserResourceFromEntityAssembler.ToResourceFromEntity(foundUser))
+        );
     }
 
     /**
@@ -78,7 +76,6 @@ public class UsersController(
     {
         var getAllUsersQuery = new GetAllUsersQuery();
         var users = await userQueryService.Handle(getAllUsersQuery, cancellationToken);
-        // Assuming that an empty list is not an error, but a valid result
         var userResources = users.Select(UserResourceFromEntityAssembler.ToResourceFromEntity);
         return Ok(userResources);
     }
