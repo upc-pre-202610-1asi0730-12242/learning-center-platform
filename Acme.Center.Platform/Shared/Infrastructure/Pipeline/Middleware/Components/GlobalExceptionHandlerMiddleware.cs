@@ -4,9 +4,8 @@ using Acme.Center.Platform.Resources.Errors;
 using Acme.Center.Platform.Resources.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using System;
-using System.Threading.Tasks;
-using System.Threading; // For OperationCanceledException
+
+// For OperationCanceledException
 
 namespace Acme.Center.Platform.Shared.Infrastructure.Pipeline.Middleware.Components;
 

@@ -4,17 +4,15 @@ using Acme.Center.Platform.Publishing.Application.QueryServices;
 using Acme.Center.Platform.Publishing.Domain.Model.Queries;
 using Acme.Center.Platform.Publishing.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Publishing.Interfaces.Rest.Transform;
-using Acme.Center.Platform.Publishing.Resources; // Corrected using directive
 using Acme.Center.Platform.Resources.Errors;
-using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails; // For ProblemDetailsFactory
+using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Acme.Center.Platform.Publishing.Domain.Model; // For PublishingError enum
+// Corrected using directive
+// For ProblemDetailsFactory
+
+// For PublishingError enum
 
 namespace Acme.Center.Platform.Publishing.Interfaces.Rest;
 
@@ -49,7 +47,7 @@ public class TutorialsController(
             tutorial,
             _errorLocalizer,
             _problemDetailsFactory,
-            (foundTutorial) => Ok(TutorialResourceFromEntityAssembler.ToResourceFromEntity(foundTutorial))
+            foundTutorial => Ok(TutorialResourceFromEntityAssembler.ToResourceFromEntity(foundTutorial))
         );
     }
 
@@ -71,7 +69,7 @@ public class TutorialsController(
             result,
             _errorLocalizer,
             _problemDetailsFactory,
-            (createdTutorial) => CreatedAtAction(nameof(GetTutorialById), new { tutorialId = createdTutorial.Id },
+            createdTutorial => CreatedAtAction(nameof(GetTutorialById), new { tutorialId = createdTutorial.Id },
                 TutorialResourceFromEntityAssembler.ToResourceFromEntity(createdTutorial))
         );
     }
@@ -111,7 +109,7 @@ public class TutorialsController(
             result,
             _errorLocalizer,
             _problemDetailsFactory,
-            (updatedTutorial) => CreatedAtAction(nameof(GetTutorialById), new { tutorialId = updatedTutorial.Id },
+            updatedTutorial => CreatedAtAction(nameof(GetTutorialById), new { tutorialId = updatedTutorial.Id },
                 TutorialResourceFromEntityAssembler.ToResourceFromEntity(updatedTutorial))
         );
     }

@@ -4,17 +4,15 @@ using Acme.Center.Platform.Profiles.Application.QueryServices;
 using Acme.Center.Platform.Profiles.Domain.Model.Queries;
 using Acme.Center.Platform.Profiles.Interfaces.Rest.Resources;
 using Acme.Center.Platform.Profiles.Interfaces.Rest.Transform;
-using Acme.Center.Platform.Profiles.Resources; // Corrected using directive
 using Acme.Center.Platform.Resources.Errors;
-using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails; // For ProblemDetailsFactory
+using Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Acme.Center.Platform.Profiles.Domain.Model; // For ProfilesError enum
+// Corrected using directive
+// For ProblemDetailsFactory
+
+// For ProfilesError enum
 
 namespace Acme.Center.Platform.Profiles.Interfaces.Rest;
 
@@ -46,7 +44,7 @@ public class ProfilesController(
             profile,
             _errorLocalizer,
             _problemDetailsFactory,
-            (foundProfile) => Ok(ProfileResourceFromEntityAssembler.ToResourceFromEntity(foundProfile))
+            foundProfile => Ok(ProfileResourceFromEntityAssembler.ToResourceFromEntity(foundProfile))
         );
     }
 
@@ -64,7 +62,7 @@ public class ProfilesController(
             result,
             _errorLocalizer,
             _problemDetailsFactory,
-            (createdProfile) => CreatedAtAction(nameof(GetProfileById), new { profileId = createdProfile.Id },
+            createdProfile => CreatedAtAction(nameof(GetProfileById), new { profileId = createdProfile.Id },
                 ProfileResourceFromEntityAssembler.ToResourceFromEntity(createdProfile))
         );
     }

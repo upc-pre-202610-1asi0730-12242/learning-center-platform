@@ -13,7 +13,7 @@ namespace Acme.Center.Platform.Publishing.Domain.Model.Aggregate;
 public partial class Tutorial
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Tutorial"/> aggregate.
+    ///     Initializes a new instance of the <see cref="Tutorial" /> aggregate.
     /// </summary>
     /// <param name="title">
     ///     The title of the tutorial.
@@ -22,7 +22,7 @@ public partial class Tutorial
     ///     A brief summary or description of the tutorial.
     /// </param>
     /// <param name="categoryId">
-    ///     The unique identifier of the <see cref="Category"/> to which this tutorial belongs.
+    ///     The unique identifier of the <see cref="Category" /> to which this tutorial belongs.
     /// </param>
     public Tutorial(string title, string summary, int categoryId) : this()
     {
@@ -32,10 +32,10 @@ public partial class Tutorial
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Tutorial"/> aggregate using a <see cref="CreateTutorialCommand"/>.
+    ///     Initializes a new instance of the <see cref="Tutorial" /> aggregate using a <see cref="CreateTutorialCommand" />.
     /// </summary>
     /// <param name="command">
-    ///     The <see cref="CreateTutorialCommand"/> containing the data for creating the tutorial.
+    ///     The <see cref="CreateTutorialCommand" /> containing the data for creating the tutorial.
     /// </param>
     public Tutorial(CreateTutorialCommand command) : this(command.Title, command.Summary, command.CategoryId)
     {
@@ -57,13 +57,13 @@ public partial class Tutorial
     public string Summary { get; private set; }
 
     /// <summary>
-    ///     Gets or sets the <see cref="Category"/> entity associated with this tutorial.
+    ///     Gets or sets the <see cref="Category" /> entity associated with this tutorial.
     ///     This is a navigation property typically loaded by the persistence mechanism.
     /// </summary>
     public Category Category { get; internal set; }
 
     /// <summary>
-    ///     Gets or sets the foreign key for the associated <see cref="Category"/>.
+    ///     Gets or sets the foreign key for the associated <see cref="Category" />.
     /// </summary>
     public int CategoryId { get; private set; }
 }

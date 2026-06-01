@@ -1,17 +1,15 @@
 using Acme.Center.Platform.Publishing.Domain.Model.Entities;
 using Acme.Center.Platform.Publishing.Domain.Model.ValueObjects;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Acme.Center.Platform.Publishing.Domain.Model.Aggregate;
 
 /// <summary>
-///     Partial class for the <see cref="Tutorial"/> aggregate, focusing on content management and publishing status.
+///     Partial class for the <see cref="Tutorial" /> aggregate, focusing on content management and publishing status.
 /// </summary>
 public partial class Tutorial : IPublishable
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Tutorial"/> aggregate with default values.
+    ///     Initializes a new instance of the <see cref="Tutorial" /> aggregate with default values.
     ///     This constructor is primarily for persistence mechanisms.
     /// </summary>
     public Tutorial()
@@ -23,7 +21,7 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Gets the collection of <see cref="Asset"/> entities associated with this tutorial.
+    ///     Gets the collection of <see cref="Asset" /> entities associated with this tutorial.
     /// </summary>
     public ICollection<Asset> Assets { get; }
 
@@ -53,8 +51,8 @@ public partial class Tutorial : IPublishable
     public bool HasViewableAssets => Assets.Any(asset => asset.Viewable);
 
     /// <summary>
-    ///     Transitions the tutorial's status to <see cref="EPublishingStatus.ReadyToEdit"/>
-    ///     if all associated assets are also in the <see cref="EPublishingStatus.ReadyToEdit"/> status.
+    ///     Transitions the tutorial's status to <see cref="EPublishingStatus.ReadyToEdit" />
+    ///     if all associated assets are also in the <see cref="EPublishingStatus.ReadyToEdit" /> status.
     /// </summary>
     public void SendToEdit()
     {
@@ -63,8 +61,8 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Transitions the tutorial's status to <see cref="EPublishingStatus.ReadyToApproval"/>
-    ///     if all associated assets are also in the <see cref="EPublishingStatus.ReadyToApproval"/> status.
+    ///     Transitions the tutorial's status to <see cref="EPublishingStatus.ReadyToApproval" />
+    ///     if all associated assets are also in the <see cref="EPublishingStatus.ReadyToApproval" /> status.
     /// </summary>
     public void SendToApproval()
     {
@@ -73,8 +71,9 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Approves and locks the tutorial, transitioning its status to <see cref="EPublishingStatus.ApprovedAndLocked"/>.
-    ///     This occurs only if all associated assets are also in the <see cref="EPublishingStatus.ApprovedAndLocked"/> status.
+    ///     Approves and locks the tutorial, transitioning its status to <see cref="EPublishingStatus.ApprovedAndLocked" />.
+    ///     This occurs only if all associated assets are also in the <see cref="EPublishingStatus.ApprovedAndLocked" />
+    ///     status.
     /// </summary>
     public void ApproveAndLock()
     {
@@ -83,7 +82,7 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Rejects the tutorial, transitioning its status back to <see cref="EPublishingStatus.Draft"/>.
+    ///     Rejects the tutorial, transitioning its status back to <see cref="EPublishingStatus.Draft" />.
     /// </summary>
     public void Reject()
     {
@@ -91,7 +90,7 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Returns the tutorial to the <see cref="EPublishingStatus.ReadyToEdit"/> status.
+    ///     Returns the tutorial to the <see cref="EPublishingStatus.ReadyToEdit" /> status.
     /// </summary>
     public void ReturnToEdit()
     {
@@ -134,7 +133,7 @@ public partial class Tutorial : IPublishable
     /// <summary>
     ///     Determines if all assets associated with the tutorial currently have the specified publishing status.
     /// </summary>
-    /// <param name="status">The <see cref="EPublishingStatus"/> to check against.</param>
+    /// <param name="status">The <see cref="EPublishingStatus" /> to check against.</param>
     /// <returns><c>true</c> if all assets have the specified status; otherwise, <c>false</c>.</returns>
     private bool HasAllAssetsWithStatus(EPublishingStatus status)
     {
@@ -174,7 +173,7 @@ public partial class Tutorial : IPublishable
     /// <summary>
     ///     Removes a specific asset from the tutorial based on its unique identifier.
     /// </summary>
-    /// <param name="identifier">The <see cref="AcmeAssetIdentifier"/> of the asset to remove.</param>
+    /// <param name="identifier">The <see cref="AcmeAssetIdentifier" /> of the asset to remove.</param>
     public void RemoveAsset(AcmeAssetIdentifier identifier)
     {
         var asset = Assets.FirstOrDefault(a => a.AssetIdentifier == identifier);
@@ -191,12 +190,12 @@ public partial class Tutorial : IPublishable
     }
 
     /// <summary>
-    ///     Constructs and returns a list of <see cref="ContentItem"/> representing the tutorial's current assets.
+    ///     Constructs and returns a list of <see cref="ContentItem" /> representing the tutorial's current assets.
     /// </summary>
     /// <remarks>
-    ///     Each <see cref="ContentItem"/> includes the asset's type and its content as a string.
+    ///     Each <see cref="ContentItem" /> includes the asset's type and its content as a string.
     /// </remarks>
-    /// <returns>A <see cref="List{ContentItem}"/> of the tutorial's assets.</returns>
+    /// <returns>A <see cref="List{ContentItem}" /> of the tutorial's assets.</returns>
     public List<ContentItem> GetContent()
     {
         var content = new List<ContentItem>();

@@ -11,18 +11,21 @@ using Acme.Center.Platform.Iam.Infrastructure.Pipeline.Middleware.Extensions;
 using Acme.Center.Platform.Iam.Infrastructure.Tokens.Jwt.Configuration;
 using Acme.Center.Platform.Iam.Infrastructure.Tokens.Jwt.Services;
 using Acme.Center.Platform.Iam.Interfaces.Acl;
+using Acme.Center.Platform.Iam.Resources;
 using Acme.Center.Platform.Profiles.Application.CommandServices;
 using Acme.Center.Platform.Profiles.Application.Internal.CommandServices;
 using Acme.Center.Platform.Profiles.Application.Internal.QueryServices;
 using Acme.Center.Platform.Profiles.Application.QueryServices;
 using Acme.Center.Platform.Profiles.Domain.Repositories;
 using Acme.Center.Platform.Profiles.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Acme.Center.Platform.Profiles.Resources;
 using Acme.Center.Platform.Publishing.Application.CommandServices;
 using Acme.Center.Platform.Publishing.Application.Internal.CommandServices;
 using Acme.Center.Platform.Publishing.Application.Internal.QueryServices;
 using Acme.Center.Platform.Publishing.Application.QueryServices;
 using Acme.Center.Platform.Publishing.Domain.Repositories;
 using Acme.Center.Platform.Publishing.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Acme.Center.Platform.Publishing.Resources;
 using Acme.Center.Platform.Resources.Errors;
 using Acme.Center.Platform.Resources.Shared;
 using Acme.Center.Platform.Shared.Domain.Repositories;
@@ -38,9 +41,8 @@ using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
 // Added for ProblemDetailsFactory
 // Added for base ProblemDetailsFactory
-using Acme.Center.Platform.Iam.Resources; // Added for IamMessages
-using Acme.Center.Platform.Profiles.Resources; // Added for ProfilesMessages
-using Acme.Center.Platform.Publishing.Resources;
+// Added for IamMessages
+// Added for ProfilesMessages
 using ProblemDetailsFactory = Acme.Center.Platform.Shared.Interfaces.Rest.ProblemDetails.ProblemDetailsFactory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,7 +55,6 @@ builder.Services.AddControllers(options => options.Conventions.Add(new KebabCase
 
 // Add ProblemDetails services
 builder.Services.AddProblemDetails();
-
 
 
 // Add CORS Policy
@@ -92,10 +93,15 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 // Explicitly register IStringLocalizer for ErrorMessages and Commons
 builder.Services.AddSingleton<IStringLocalizer<ErrorMessages>, StringLocalizer<ErrorMessages>>();
 builder.Services
-    .AddSingleton<IStringLocalizer<CommonMessages>, StringLocalizer<CommonMessages>>(); // Corrected from Common to Commons
+    .AddSingleton<IStringLocalizer<CommonMessages>,
+        StringLocalizer<CommonMessages>>(); // Corrected from Common to Commons
 builder.Services.AddSingleton<IStringLocalizer<IamMessages>, StringLocalizer<IamMessages>>(); // Added for IamMessages
-builder.Services.AddSingleton<IStringLocalizer<ProfilesMessages>, StringLocalizer<ProfilesMessages>>(); // Added for ProfilesMessages
-builder.Services.AddSingleton<IStringLocalizer<PublishingMessages>, StringLocalizer<PublishingMessages>>(); // Added for PublishingMessages
+builder.Services
+    .AddSingleton<IStringLocalizer<ProfilesMessages>,
+        StringLocalizer<ProfilesMessages>>(); // Added for ProfilesMessages
+builder.Services
+    .AddSingleton<IStringLocalizer<PublishingMessages>,
+        StringLocalizer<PublishingMessages>>(); // Added for PublishingMessages
 
 // Register the custom ProblemDetailsFactory
 builder.Services.AddSingleton<ProblemDetailsFactory>();
