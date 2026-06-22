@@ -22,9 +22,9 @@ public class RequestAuthorizationMiddleware(RequestDelegate next)
     public async Task InvokeAsync(
         HttpContext context,
         IUserQueryService userQueryService,
-        ITokenService tokenService,
-        CancellationToken cancellationToken)
+        ITokenService tokenService)
     {
+        var cancellationToken = context.RequestAborted;
         Console.WriteLine("Entering InvokeAsync");
         // skip authorization if endpoint is decorated with [AllowAnonymous] attribute
         var allowAnonymous = context.Request.HttpContext.GetEndpoint()!.Metadata
